@@ -1,51 +1,64 @@
+const spinner = displaySpinner => {
+    document.getElementById('spinner').style.display = displaySpinner;
+}
+const searchResult = displaySearchToggle => {
+    document.getElementById('display-search').style.display = displaySearchToggle;
+}
 const searchBook = () => {
     const input = document.getElementById('search-input')
     const inputText = input.value
     input.value = ''
 
+    spinner('block')
+    searchResult('none')
+    document.getElementById('total-search').style.display = ('none')
     const noResultFound = document.getElementById('no-result')
     noResultFound.innerHTML = ''
     if (inputText === '') {
         // console.log(alert('enter a valid input'))
 
-
+        spinner('none')
         const div = document.createElement('div')
-        div.innerHTML = `<h3 class="mt-5 text-center text-danger"> Sorry No Result Found!!!</h3>`
-        noResultFound.appendChild(div)
+        div.innerHTML = `<div class="alert alert-danger text-center" role="alert">
+                    Sorry No Result Found !!!
+                          </div>`
+   noResultFound.appendChild(div)
+}
+    else {
+        const url = `https://openlibrary.org/search.json?q=${inputText}`
+        fetch(url)
+            .then(res => res.json())
+            .then(data => {
+                // console.log(data)
+                let totalSearch = data.numFound
+                document.getElementById('total-search').innerHTML = `
+                <div class="alert alert-success text-center" role="alert">
+                Total Search Result Found : ${totalSearch}
+                          </div>`
+
+                displaySearch(data.docs)
+            })
     }
-    else{
-
-    
-    const url = `http://openlibrary.org/search.json?q=${inputText}`
-    fetch(url)
-        .then(res => res.json())
-        .then(data => {
-            // console.log(data)
-            let totalSearch = data.numFound
-            document.getElementById('total-search').innerText = `Total Search Result Found : ${totalSearch}`
-
-            displaySearch(data.docs)
-        })
-    }
-
 }
 const displaySearch = books => {
     const displayResult = document.getElementById('display-search')
     displayResult.textContent = ''
     books.forEach(book => {
-
         const div = document.createElement('div')
-        div.classList.add('col')
-        div.innerHTML = `<div class="card h-100 ">
-                         <img src="https://covers.openlibrary.org/b/id/${book.cover_i}-M.jpg" class="card-img-top" alt="...">
-                            <div class="card-body bg-info text-white">
-                             <h3  class="card-title"><span class="text-dark">Title : </span> ${book.title}</h3>
-                             <h5> <span class="text-dark">Author : </span> ${book.author_name}</h5>
-                             <h6>  <span class="text-dark">Publisher : </span> ${book.publisher}</h6>
-                             <p><span class="text-dark">First Publish : </span>${book.first_publish_year}</p>
-                       
-              </div>
+        div.classList.add('col-md-3')
+        div.innerHTML = `<div class="card  ">
+                            <img src="https://covers.openlibrary.org/b/id/${book.cover_i}-M.jpg" class="card-img-top h-300" alt="">
+                         <div class="card-body bg-info text-white>
+                             <h5  class="card-title"><span class="text-dark">Title :  ${book.title}</span></h5>
+                             <p> Author :  ${book.author_name? book.author_name:'Dont Found'}</p>
+                             <small>  Publisher :  ${book.publisher? book.publisher:'Dont Found'}</small>
+                             </br>
+                            <small>First Published  : ${book.first_publish_year? book.first_publish_year:'Dont Found'}</small>
+                </div>
       </div>`
         displayResult.appendChild(div)
     })
+    spinner('none')
+    document.getElementById('total-search').style.display = ('block')
+    searchResult('flex')
 }
